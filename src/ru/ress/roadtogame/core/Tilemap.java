@@ -1,33 +1,33 @@
 package ru.ress.roadtogame.core;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.jsfml.graphics.*;
+import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
 
 /**
  * Created by ress on 30.09.17.
  */
 public class Tilemap {
-    private Surface surface;
+    private RenderWindow app;
     private int width, height;
     private int tilewidth, tileheight;
     private Tile[][] map;
     private Texture tileimage;
 
-    public Sprite getSprite() {
-        draw();
-        return surface.getSurf();
+    public Tilemap (RenderWindow app) {
+        this.app = app;
     }
 
-    public void build(String filename, String fileimage, int w, int h) {
+    public void build(String filename, String fileimage, String layer) {
         loadTexture(fileimage);
-        surface = new Surface(w,h);
-        map = new Tile[1][1];
         try{
             FileInputStream fin = new FileInputStream(filename);
             BufferedReader bufReader = new BufferedReader(new InputStreamReader(fin));
@@ -43,12 +43,10 @@ public class Tilemap {
                     }
                 }
 
-                if (str.equals("[layer]")) {
+                if (str.equals(layer)) {
                     int i=0;
-                    byte digitMax = 0;
                     while ((str = bufReader.readLine()) != null && !str.equals("")) {
-                        byte digit = getLine(i++,str);
-                        if (digit>digitMax) digitMax = digit;
+                        procLine(i++,str);
                     }
                 }
             }
@@ -58,15 +56,25 @@ public class Tilemap {
         return;
     }
 
-    private void draw() {
-        for(int i=0; i<width; i++) {
-            for(int j=0; j<height; j++) {
-                if (map[i][j] != null) surface.draw(map[i][j]);
+    public void draw(Vector2i pos, Vector2i screen) {
+        int scrx1 = (pos.x+screen.x)/tilewidth+1;
+        int scrx0 = pos.x/tilewidth;
+        if (scrx0<0) scrx0 = 0;
+        int scry1 = (pos.y+screen.y)/tileheight+1;
+        int scry0 = pos.y/tileheight;
+        if (scry0<0) scry0 = 0;
+
+        for(int i=scry0; i<scry1; i++) {
+            for(int j=scrx0; j<scrx1; j++) {
+                if (map[i][j] == null) continue;
+                map[i][j].move(-pos.x, -pos.y);
+                app.draw(map[i][j]);
+                map[i][j].move(pos.x, pos.y);
             }
         }
     }
 
-    private byte getLine(int line, String str) {
+    private byte procLine(int line, String str) {
         int j = 0;
         byte digitMax = 0;
         String digitStr = "";
@@ -109,61 +117,26 @@ public class Tilemap {
     }
 
     private Tile getTile(int digit, int xIndex, int yIndex) {
+        if (--digit<0) return null;
+
         Tile tile;
         Vector2i size = tileimage.getSize();
         int hLen = size.x/tilewidth;
-        int vLen = size.y/tileheight;
-        digit -= 1;
-        if (digit<0) return null;
         int i = digit / hLen;
         int j = digit % hLen;
-        tile = new Tile(xIndex*tilewidth, yIndex*tileheight, j*tilewidth, i*tileheight, tilewidth, tileheight);
+        tile = new Tile(xIndex*tilewidth, yIndex*tileheight,
+                j*tilewidth, i*tileheight, tilewidth, tileheight);
         return tile;
-    }
-
-    // SURFACE
-
-    private class Surface {
-        private RenderTexture renderTexture;
-        private Sprite spr;
-
-        Surface(int w, int h) {
-            spr = new Sprite();
-            try {
-                renderTexture = new RenderTexture();
-                renderTexture.create(w,h);
-            } catch (TextureCreationException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        void draw(Tile tile) {
-            renderTexture.draw(tile.getSprite());
-            return;
-        }
-
-        Sprite getSurf() {
-            renderTexture.display();
-            spr.setTexture(renderTexture.getTexture());
-            return spr;
-        }
     }
 
     // TILE
 
-    private class Tile {
-        private Sprite spr;
-        private IntRect rect;
+    private class Tile extends Sprite {
         Tile(int xpos, int ypos, int x, int y, int w, int h) {
-            spr = new Sprite();
-            rect = new IntRect(x,y,w,h);
-            spr.setTexture(tileimage);
-            spr.setTextureRect(rect);
-            spr.setPosition(xpos,ypos);
-        }
-
-        Sprite getSprite() {
-            return spr;
+            IntRect rect = new IntRect(x,y,w,h);
+            setTexture(tileimage);
+            setTextureRect(rect);
+            setPosition(xpos,ypos);
         }
     }
 }
