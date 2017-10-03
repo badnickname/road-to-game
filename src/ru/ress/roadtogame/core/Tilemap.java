@@ -1,15 +1,12 @@
 package ru.ress.roadtogame.core;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.jsfml.graphics.*;
-import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.nio.file.Paths;
 
 /**
@@ -20,15 +17,17 @@ public class Tilemap {
     private int width, height;
     private int tilewidth, tileheight;
     private Tile[][] map;
+    private Sprite[][] sprMap;
     private Texture tileimage;
+    private SurfaceBuilder surfaceBuilder;
 
     public Tilemap (RenderWindow app) {
         this.app = app;
     }
 
-    public void build(String filename, String fileimage, String layer) {
+    public boolean build(String filename, String fileimage, String layer) {
         loadTexture(fileimage);
-        try{
+        try {
             FileInputStream fin = new FileInputStream(filename);
             BufferedReader bufReader = new BufferedReader(new InputStreamReader(fin));
             String str;
@@ -43,7 +42,7 @@ public class Tilemap {
                     }
                 }
 
-                if (str.equals(layer)) {
+                if (str.equals("["+layer+"]")) {
                     int i=0;
                     while ((str = bufReader.readLine()) != null && !str.equals("")) {
                         procLine(i++,str);
@@ -52,8 +51,9 @@ public class Tilemap {
             }
         }catch (IOException e){
             System.out.println("Ошибка при загрузке тайловой карты");
+            return false;
         }
-        return;
+        return true;
     }
 
     public void draw(Vector2i pos, Vector2i screen) {
@@ -67,9 +67,7 @@ public class Tilemap {
         for(int i=scry0; i<scry1; i++) {
             for(int j=scrx0; j<scrx1; j++) {
                 if (map[i][j] == null) continue;
-                map[i][j].move(-pos.x, -pos.y);
                 app.draw(map[i][j]);
-                map[i][j].move(pos.x, pos.y);
             }
         }
     }
@@ -139,4 +137,19 @@ public class Tilemap {
             setPosition(xpos,ypos);
         }
     }
+
+    // SURFBUILDER
+
+    private class SurfaceBuilder extends Thread {
+        SurfaceBuilder() {
+            setDaemon(true);
+        }
+
+        @Override
+        public void run() {
+
+        }
+
+    }
+
 }
