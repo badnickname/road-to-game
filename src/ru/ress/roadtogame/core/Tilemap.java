@@ -17,15 +17,24 @@ public class Tilemap {
     private int width, height;
     private int tilewidth, tileheight;
     private Tile[][] map;
-    private Sprite[][] sprMap;
     private Texture tileimage;
-    private SurfaceBuilder surfaceBuilder;
 
-    public Tilemap (RenderWindow app) {
+    // TILE
+    private class Tile extends Sprite {
+        Tile(int xpos, int ypos, int x, int y, int w, int h) {
+            IntRect rect = new IntRect(x,y,w,h);
+            setTexture(tileimage);
+            setTextureRect(rect);
+            setPosition(xpos,ypos);
+        }
+    }
+
+    Tilemap (RenderWindow app) {
         this.app = app;
     }
 
-    public boolean build(String filename, String fileimage, String layer) {
+    // LOAD AND BUILD TILEMAP
+    boolean build(String filename, String fileimage, String layer) {
         loadTexture(fileimage);
         try {
             FileInputStream fin = new FileInputStream(filename);
@@ -43,6 +52,10 @@ public class Tilemap {
                 }
 
                 if (str.equals("["+layer+"]")) {
+                    do {
+                        str = bufReader.readLine();
+                    } while(!(str.equals("data=")));
+
                     int i=0;
                     while ((str = bufReader.readLine()) != null && !str.equals("")) {
                         procLine(i++,str);
@@ -56,6 +69,7 @@ public class Tilemap {
         return true;
     }
 
+    // DRAW TILEMAP
     public void draw(Vector2i pos, Vector2i screen) {
         int scrx1 = (pos.x+screen.x)/tilewidth+1;
         int scrx0 = pos.x/tilewidth;
@@ -72,12 +86,13 @@ public class Tilemap {
         }
     }
 
+    // FILL TILE MAP (ARRAY)
     private byte procLine(int line, String str) {
         int j = 0;
         byte digitMax = 0;
         String digitStr = "";
         for(int i=0;i<str.length();i++) {
-            if (str.charAt(i)==',') {
+            if (str.charAt(i)==',' || i>=str.length()) {
                 byte digit = Byte.valueOf(digitStr);
                 if (digit>digitMax) digitMax = digit;
                 map[line][j] = getTile(digit, j, line);
@@ -90,6 +105,7 @@ public class Tilemap {
         return digitMax;
     }
 
+    // GET TILE'S INDEX
     private int getInt(String str) {
         int number = 0;
         int n = 1;
@@ -103,6 +119,7 @@ public class Tilemap {
         return number;
     }
 
+    // LOAD TILELIST
     private void loadTexture(String file) {
         tileimage = new Texture();
         try {
@@ -111,9 +128,9 @@ public class Tilemap {
         catch (IOException ex) {
             ex.printStackTrace();
         }
-        return;
     }
 
+    // GET TILE FROM TILELIST
     private Tile getTile(int digit, int xIndex, int yIndex) {
         if (--digit<0) return null;
 
@@ -125,31 +142,6 @@ public class Tilemap {
         tile = new Tile(xIndex*tilewidth, yIndex*tileheight,
                 j*tilewidth, i*tileheight, tilewidth, tileheight);
         return tile;
-    }
-
-    // TILE
-
-    private class Tile extends Sprite {
-        Tile(int xpos, int ypos, int x, int y, int w, int h) {
-            IntRect rect = new IntRect(x,y,w,h);
-            setTexture(tileimage);
-            setTextureRect(rect);
-            setPosition(xpos,ypos);
-        }
-    }
-
-    // SURFBUILDER
-
-    private class SurfaceBuilder extends Thread {
-        SurfaceBuilder() {
-            setDaemon(true);
-        }
-
-        @Override
-        public void run() {
-
-        }
-
     }
 
 }

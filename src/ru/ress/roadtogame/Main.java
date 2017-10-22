@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Window wnd = new Window(640,480,"road-to-game");
+        System.out.println(Math.pow(0.5,3.5)/3.5 - Math.pow(0.5,4)/8. + Math.pow(0.5,4.5)/13.5 - Math.pow(0.5,5)/16.);
         while(wnd.isAlive());
-        return;
     }
 }

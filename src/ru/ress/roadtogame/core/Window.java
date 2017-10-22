@@ -69,8 +69,6 @@ public class Window extends Thread {
             }
         }
 
-        return;
-
     }
 
 }

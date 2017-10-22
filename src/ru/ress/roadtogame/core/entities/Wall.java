@@ -6,4 +6,7 @@ import ru.ress.roadtogame.core.Entity;
  * Created by ress on 02.10.17.
  */
 public class Wall extends Entity {
+    public Wall() {
+        type = TWALL;
+    }
 }
