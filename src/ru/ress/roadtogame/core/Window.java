@@ -2,8 +2,6 @@ package ru.ress.roadtogame.core;
 
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RenderWindow;
-import org.jsfml.graphics.View;
-import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 import org.jsfml.window.Keyboard;
 import org.jsfml.window.VideoMode;
@@ -32,6 +30,7 @@ public class Window extends Thread {
         app = new RenderWindow();
         app.create(new VideoMode(w,h), title, RenderWindow.CLOSE | RenderWindow.RESIZE);
         app.clear(Color.WHITE);
+        //app.setFramerateLimit(60);
         scene = new SceneMain(app);
         scene.init();
         loop();
@@ -47,12 +46,14 @@ public class Window extends Thread {
             frame++;
             long curTime = System.currentTimeMillis();
             if (curTime > time + 1000) {
-                app.setTitle("FPS: "+Integer.toString(frame)+" Sprites: ~10000");
+                app.setTitle("FPS: "+Integer.toString(frame));
                 frame = 0;
                 time = curTime;
             }
 
             scene.draw();
+            scene.sendKeyDown(Keyboard.Key.UNKNOWN);
+            scene.sendKeyUp(Keyboard.Key.UNKNOWN);
             app.display();
 
             for(Event event : app.pollEvents()) {
@@ -64,6 +65,15 @@ public class Window extends Thread {
                     case RESIZED: {
                         Vector2i size = app.getSize();
                         scene.resize(size.x, size.y);
+                        break;
+                    }
+                    case KEY_PRESSED: {
+                        scene.sendKeyDown(event.asKeyEvent().key);
+                        break;
+                    }
+                    case KEY_RELEASED: {
+                        scene.sendKeyUp(event.asKeyEvent().key);
+                        break;
                     }
                 }
             }

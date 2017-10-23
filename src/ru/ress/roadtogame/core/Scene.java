@@ -5,6 +5,8 @@ import org.jsfml.graphics.Texture;
 import org.jsfml.graphics.View;
 import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
+import org.jsfml.window.Keyboard;
+import ru.ress.roadtogame.core.entities.Light;
 import ru.ress.roadtogame.core.entities.Player;
 import ru.ress.roadtogame.core.entities.Wall;
 
@@ -25,17 +27,21 @@ public class Scene {
     protected String ftile, fmap;
     protected int scrWidth, scrHeight;
     protected View view;
+    protected Keyboard.Key keyDown, keyUp;
 
     // OBJECTS FACTORY
     // load( Entities list )
     protected class Entities {
         private String filename;
         private Texture texturePlayer;
+        private Texture textureLight;
 
         private void loadTextures() {
             try {
                 texturePlayer = new Texture();
                 texturePlayer.loadFromFile(Paths.get("player.png"));
+                textureLight = new Texture();
+                textureLight.loadFromFile(Paths.get("light.png"));
             } catch (IOException io) {
                 io.printStackTrace();
             }
@@ -72,6 +78,11 @@ public class Scene {
                                     System.out.println("Created Player");
                                     break;
                                 }
+                                case "Light" : {
+                                    entity = new Light(textureLight,0,0);
+                                    System.out.println("Created Light");
+                                    break;
+                                }
                                 default: {
                                     entity = new Entity();
                                 }
@@ -94,17 +105,23 @@ public class Scene {
                                 switch (entityType) {
                                     case "Wall" : {
                                         entity.setCoords(digits[0] << 5,digits[1]<< 5,digits[2]<< 5,digits[3]<< 5);
+                                        list.add(entity);
                                         break;
                                     }
                                     case "Player" : {
                                         entity.setPosition(digits[0]<< 5,digits[1]<< 5);
+                                        list.add(entity);
+                                        break;
+                                    }
+                                    case "Light" : {
+                                        entity.setPosition(digits[0]<< 5,digits[1]<< 5);
+                                        list.add(0,entity);
                                         break;
                                     }
                                     default: {
                                         entity = new Entity();
                                     }
                                 }
-                                list.add(entity);
                             }
                         }
                     }
@@ -137,6 +154,18 @@ public class Scene {
         scrWidth = w;
         scrHeight = h;
         view.setSize(w, h);
+    }
+
+    public void sendKeyDown(Keyboard.Key key) {
+        if (key != Keyboard.Key.UNKNOWN) keyDown = key;
+    }
+
+    public void sendKeyUp(Keyboard.Key key) {
+        if (key != Keyboard.Key.UNKNOWN) keyUp = key;
+    }
+
+    protected void clearKeys() {
+        keyUp = keyDown = Keyboard.Key.UNKNOWN;
     }
 
     public void draw() {

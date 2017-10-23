@@ -4,6 +4,8 @@ import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 
+import java.util.ArrayList;
+
 /**
  * Created by ress on 02.10.17.
  */
@@ -11,6 +13,7 @@ public class Entity {
     public final static int TDEFAULT = 0;
     public final static int TWALL = 1;
     public final static int TPLAYER = 2;
+    public final static int TLIGHT = 3;
 
     protected double x,y;
     protected int width, height;
@@ -19,9 +22,17 @@ public class Entity {
     protected int framesInAnimate;
     protected Sprite sprite;
     protected int originX, originY;
-    protected int xScale, yScale;
+    protected float xScale, yScale;
+    protected int animType;
     protected int type;
+
     private int textureSize;
+
+    protected ArrayList<Entity> objects;
+
+    public void sendObjects(ArrayList<Entity> list) {
+        objects = list;
+    }
 
     public Entity() {
         type = TDEFAULT;
@@ -32,22 +43,20 @@ public class Entity {
 
         sprite = new Sprite();
         sprite.setTexture(texture);
-        sprite.setTextureRect(new IntRect(0,0,w,h));
+        sprite.setTextureRect(new IntRect(0,0,texture.getSize().x,texture.getSize().y));
         sprite.setPosition(0,0);
         textureSize = texture.getSize().x;
-        originY = originX = texture.getSize().y / 2;
+        originY = originX = 0;
         xScale = yScale = 1;
 
         width = w;
         height = h;
         x = y = 0;
 
-        adaptAnimation();
+        animType = 0;
     }
 
-    public void step() {
-        return;
-    }
+    public void step() {}
 
     public boolean isLocated(double _x, double _y) {
         if (_x >= x && _x <= x + width &&
@@ -55,9 +64,23 @@ public class Entity {
         return false;
     }
 
+    public Vector2f isLocatedX(double _x, double _y) {
+        if (_x >= x && _x <= x + width &&
+                _y >= y && _y <= y + height) return new Vector2f((float)x,(float)x+width);
+        return null;
+    }
+
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setAnimType(int anim) {
+        animType = anim;
+    }
+
+    public int getAnimType() {
+        return animType;
     }
 
     private void updateAnimation() {
@@ -70,12 +93,14 @@ public class Entity {
         this.y = y;
         width = x1;
         height = y1;
-
-        adaptAnimation();
     }
 
     public Vector2f getPosition() {
         return new Vector2f((float)x,(float)y);
+    }
+
+    public Vector2f getSize() {
+        return new Vector2f((float)width,(float)height);
     }
 
     public int getType() {
@@ -87,7 +112,7 @@ public class Entity {
         return sprite;
     }
 
-    private void adaptAnimation() {
+    protected void initAnimation() {
         framesInAnimate = textureSize / width;
         imageSpeed = imageIndex = 0;
         if (sprite != null) {
@@ -101,7 +126,6 @@ public class Entity {
         imageIndex+=imgSpeed;
         if (imageIndex > framesInAnimate) imageIndex = 0;
 
-        int curIndex = (int)(imageIndex);
-        if (curIndex != prevIndex) sprite.setTextureRect(new IntRect(curIndex*width,0,width,height));
+        sprite.setTextureRect(new IntRect((int)(imageIndex)*width,animType*height,width,height));
     }
 }
