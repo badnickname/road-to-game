@@ -20,6 +20,7 @@ public class Light extends Entity {
     public Light(Texture texture, int w, int h) {
         super(texture, w, h);
         type = TLIGHT;
+        shades = false;
         scretch = 4;
         surf = new RenderTexture();
 
@@ -58,12 +59,34 @@ public class Light extends Entity {
         sprite.setTexture(surf.getTexture());
     }
 
+    @Override
+    public Vector2f getSize() {
+        return new Vector2f(_w*scretch/2, _h*scretch/2);
+    }
+
+    @Override
+    public Vector2f getPosition() {
+        return new Vector2f((float)x+_w*scretch/2, (float)y+_h*scretch);
+    }
+
+    @Override
+    public double pointDistanceTo(double _x, double _y) {
+        double dx = x+_w*scretch/2-_x;
+        double dy = y+_h*scretch/2-_y;
+        return Math.sqrt( dx*dx + dy*dy );
+    }
+
     private void drawSurface() {
         surf.clear( clrAlpha );
         surf.draw(light);
+        int _dist = (int)(_w/4 * scretch);
+
+        int _xpos = (int)(x+_w*scretch/2);
+        int _ypos = (int)(y+_h*scretch/2);
 
         for (Entity object : objects) {
-            if (object == this) continue;
+            if (object.getType() != TWALL && object.getType() != TPLAYER) continue;
+            if (object.getMinDistance(_xpos,_ypos) > _dist) continue;
 
             float _x0 = (object.getPosition().x - (float)x) / scretch;
             float _y0 = (object.getPosition().y - (float)y) / scretch;

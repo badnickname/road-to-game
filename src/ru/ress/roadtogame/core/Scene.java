@@ -6,6 +6,7 @@ import org.jsfml.graphics.View;
 import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 import org.jsfml.window.Keyboard;
+import org.jsfml.window.Mouse;
 import ru.ress.roadtogame.core.entities.Light;
 import ru.ress.roadtogame.core.entities.Player;
 import ru.ress.roadtogame.core.entities.Wall;
@@ -28,6 +29,9 @@ public class Scene {
     protected int scrWidth, scrHeight;
     protected View view;
     protected Keyboard.Key keyDown, keyUp;
+    protected Mouse.Button mouseDown, mouseUp;
+    protected int mouseX, mouseY;
+    protected boolean isMouseDown, isMouseUp;
 
     // OBJECTS FACTORY
     // load( Entities list )
@@ -138,6 +142,7 @@ public class Scene {
     public Scene(RenderWindow app) {
         this.app = app;
         isInit = false;
+        isMouseDown = isMouseUp = false;
         ftile = "tile.png";
         fmap = "map";
         scrWidth = app.getSize().x;
@@ -164,8 +169,23 @@ public class Scene {
         if (key != Keyboard.Key.UNKNOWN) keyUp = key;
     }
 
+    public void sendMouseDown(Mouse.Button but, int x, int y) {
+        mouseX = x;
+        mouseY = y;
+        mouseDown = but;
+        isMouseDown = true;
+    }
+
+    public void sendMouseUp(Mouse.Button but, int x, int y) {
+        mouseX = x;
+        mouseY = y;
+        mouseUp = but;
+        isMouseUp = true;
+    }
+
     protected void clearKeys() {
         keyUp = keyDown = Keyboard.Key.UNKNOWN;
+        isMouseUp = isMouseDown = false;
     }
 
     public void draw() {

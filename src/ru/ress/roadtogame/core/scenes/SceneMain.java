@@ -6,7 +6,9 @@ import org.jsfml.system.Vector2i;
 import org.jsfml.window.Keyboard;
 import ru.ress.roadtogame.core.Entity;
 import ru.ress.roadtogame.core.Scene;
+import ru.ress.roadtogame.core.entities.Hook;
 import ru.ress.roadtogame.core.entities.Player;
+import ru.ress.roadtogame.core.particles.Emitter;
 
 import java.util.ArrayList;
 
@@ -44,10 +46,18 @@ public class SceneMain extends Scene {
         app.clear(bgColor);
         defaultLayer.draw(new Vector2i(x-scrWidth/2,y-scrHeight/2), new Vector2i(scrWidth,scrHeight));
 
-        for(Entity object : entity) {
+        for(int i =0; i<entity.size(); i++) {
+            Entity object = entity.get(i);
             switch (object.getType()) {
                 case Entity.TPLAYER : {
+                    Vector2f viewSize = view.getSize();
+                    int _xview = x - (int)viewSize.x/2;
+                    int _yview = y - (int)viewSize.y/2;
+                    if (isMouseDown) object.onMouseDown(mouseDown, mouseX + _xview, mouseY + _yview);
+                    if (isMouseUp) object.onMouseUp(mouseUp, mouseX + _xview, mouseY + _yview);
                     ((Player)object).step(keyDown, keyUp);
+                    Emitter emitter = ((Player)object).getEmitter();
+                    emitter.step(app);
                     app.draw(object.getSprite());
                     Vector2f coords = object.getPosition();
                     x = (int)coords.x;
@@ -56,8 +66,16 @@ public class SceneMain extends Scene {
                 }
 
                 case Entity.TLIGHT : {
-                    object.step();
+                    if (object.pointDistanceTo(x,y) < 800) object.step();
                     app.draw(object.getSprite(),bmLight);
+                    break;
+                }
+
+                case Entity.THOOK : {
+                    object.step();
+                    ((Hook)object).drawRope(app);
+                    app.draw(object.getSprite());
+                    if (isMouseUp) object.onMouseUp(mouseUp, mouseX, mouseY);
                     break;
                 }
             }

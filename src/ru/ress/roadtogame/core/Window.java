@@ -2,6 +2,7 @@ package ru.ress.roadtogame.core;
 
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RenderWindow;
+import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
 import org.jsfml.window.Keyboard;
 import org.jsfml.window.VideoMode;
@@ -73,6 +74,16 @@ public class Window extends Thread {
                     }
                     case KEY_RELEASED: {
                         scene.sendKeyUp(event.asKeyEvent().key);
+                        break;
+                    }
+                    case MOUSE_BUTTON_PRESSED: {
+                        Vector2i pos = event.asMouseEvent().position;
+                        scene.sendMouseDown(event.asMouseButtonEvent().button, pos.x, pos.y);
+                        break;
+                    }
+                    case MOUSE_BUTTON_RELEASED: {
+                        Vector2i pos = event.asMouseEvent().position;
+                        scene.sendMouseUp(event.asMouseButtonEvent().button, pos.x, pos.y);
                         break;
                     }
                 }

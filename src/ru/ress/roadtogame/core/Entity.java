@@ -3,6 +3,7 @@ package ru.ress.roadtogame.core;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
+import org.jsfml.window.Mouse;
 
 import java.util.ArrayList;
 
@@ -14,6 +15,7 @@ public class Entity {
     public final static int TWALL = 1;
     public final static int TPLAYER = 2;
     public final static int TLIGHT = 3;
+    public final static int THOOK = 4;
 
     protected double x,y;
     protected int width, height;
@@ -25,6 +27,7 @@ public class Entity {
     protected float xScale, yScale;
     protected int animType;
     protected int type;
+    protected boolean shades;
 
     private int textureSize;
 
@@ -36,10 +39,12 @@ public class Entity {
 
     public Entity() {
         type = TDEFAULT;
+        shades = true;
     }
 
     public Entity(Texture texture, int w, int h) {
         type = TDEFAULT;
+        shades = true;
 
         sprite = new Sprite();
         sprite.setTexture(texture);
@@ -54,6 +59,18 @@ public class Entity {
         x = y = 0;
 
         animType = 0;
+    }
+
+    public boolean isDrawShades() {
+        return shades;
+    }
+
+    public void onMouseDown(Mouse.Button but, int mouseX, int mouseY) {
+
+    }
+
+    public void onMouseUp(Mouse.Button but, int mouseX, int mouseY) {
+
     }
 
     public void step() {}
@@ -96,7 +113,7 @@ public class Entity {
     }
 
     public Vector2f getPosition() {
-        return new Vector2f((float)x,(float)y);
+        return new Vector2f((float)x-originX,(float)y-originY);
     }
 
     public Vector2f getSize() {
@@ -122,10 +139,35 @@ public class Entity {
     }
 
     protected void playAnimation(double imgSpeed) {
-        int prevIndex = (int)Math.ceil(imageIndex);
         imageIndex+=imgSpeed;
         if (imageIndex > framesInAnimate) imageIndex = 0;
 
         sprite.setTextureRect(new IntRect((int)(imageIndex)*width,animType*height,width,height));
+    }
+
+    public double pointDistanceTo(double _x, double _y) {
+        double dx = x-_x;
+        double dy = y-_y;
+        return Math.sqrt( dx*dx + dy*dy );
+    }
+
+    public int getMinDistance(double _x, double _y) {
+        int dist0 = (int) pointDistanceTo(_x,_y);
+        int dist1 = (int) pointDistanceTo(_x-width,_y-height);
+        if (dist0<dist1) return dist0; else return dist1;
+    }
+
+    protected double pointDirectionTo(double _x, double _y) {
+        double dt = 0;
+        if (_x < x) dt = Math.PI;
+        double dx = _x-x;
+        double dy = _y-y;
+        if (dx == 0) dx = 0.0000001;
+        double result = Math.atan( dy/dx ) + dt;
+
+        while (result>2*Math.PI) {
+            result -= 2*Math.PI;
+        }
+        return result;
     }
 }
